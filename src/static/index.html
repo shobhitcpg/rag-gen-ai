@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GenAI RAG Assessment - Strategy Comparison</title>
+    <!-- Modern Premium Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-primary: #090d16;
+            --bg-secondary: #0f1524;
+            --accent-indigo: #6366f1;
+            --accent-purple: #a855f7;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --glass-bg: rgba(15, 23, 42, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-hover-border: rgba(99, 102, 241, 0.35);
+            --glow-indigo: rgba(99, 102, 241, 0.15);
+            --glow-purple: rgba(168, 85, 247, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 90% 80%, rgba(168, 85, 247, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2.5rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+
+        /* HEADER DESIGN */
+        header {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 30%, #a855f7 70%, #6366f1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        /* STATS BAR */
+        .stats-bar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .stat-dot {
+            width: 10px;
+            height: 10px;
+            background-color: var(--accent-green);
+            border-radius: 50%;
+            box-shadow: 0 0 12px var(--accent-green);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .stat-val {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .control-group label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .control-group input[type="range"] {
+            -webkit-appearance: none;
+            width: 120px;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+        }
+
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-indigo);
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+
+        .control-group input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+        }
+
+        /* SEARCH CONTAINER */
+        .search-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-box {
+            display: flex;
+            gap: 1rem;
+            position: relative;
+        }
+
+        .search-input {
+            flex: 1;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1.5px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.25rem 1.5rem;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-indigo);
+            box-shadow: 0 0 15px var(--glow-indigo);
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, var(--accent-indigo), var(--accent-purple));
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 0 2rem;
+            font-weight: 600;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+        }
+
+        .search-btn:active {
+            transform: translateY(0);
+        }
+
+        /* QUICK SUGGESTIONS */
+        .suggestions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .suggest-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .tag {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
+            border-radius: 100px;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tag:hover {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--accent-indigo);
+            color: var(--text-primary);
+            transform: translateY(-1px);
+        }
+
+        /* STRATEGY COMPARISON PANELS */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .strategy-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            min-height: 400px;
+            transition: border-color 0.3s ease;
+        }
+
+        .strategy-card:hover {
+            border-color: var(--glass-hover-border);
+        }
+
+        .strategy-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 1rem;
+        }
+
+        .strategy-badge {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 100px;
+            padding: 0.4rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .strategy-a-badge {
+            color: var(--accent-cyan);
+            border: 1px solid rgba(6, 182, 212, 0.25);
+            background: rgba(6, 182, 212, 0.05);
+        }
+
+        .strategy-b-badge {
+            color: var(--accent-purple);
+            border: 1px solid rgba(168, 85, 247, 0.25);
+            background: rgba(168, 85, 247, 0.05);
+        }
+
+        .strategy-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 600;
+        }
+
+        .expansion-box {
+            background: rgba(168, 85, 247, 0.06);
+            border: 1px dashed rgba(168, 85, 247, 0.3);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .expansion-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--accent-purple);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .expansion-text {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            font-family: monospace;
+            line-height: 1.4;
+        }
+
+        .results-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        /* RESULT CARD */
+        .result-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rank-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        .score-badge {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            color: var(--accent-indigo);
+            border-radius: 8px;
+            padding: 0.25rem 0.6rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .result-text {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .result-item:hover .result-text {
+            color: var(--text-primary);
+        }
+
+        /* SIMILARITY BAR */
+        .score-bar-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .score-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-indigo), var(--accent-purple));
+            border-radius: 3px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 250px;
+            color: var(--text-secondary);
+            gap: 0.75rem;
+            text-align: center;
+        }
+
+        .empty-icon {
+            font-size: 2rem;
+            opacity: 0.5;
+        }
+
+        /* LOADING ANIMATION */
+        .loader {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            border-top-color: var(--accent-indigo);
+            animation: spin 1s ease-in-out infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* KNOWLEDGE BASE VIEWER */
+        .kb-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2rem;
+        }
+
+        .kb-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding-bottom: 0.5rem;
+        }
+
+        .kb-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .kb-toggle-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .kb-content {
+            margin-top: 1.5rem;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        /* Custom Scrollbar */
+        .kb-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .kb-content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.01);
+        }
+        .kb-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .kb-item {
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>RAG Multi-Strategy Evaluation</h1>
+            <p class="subtitle">Evaluate and compare Direct Retrieval (Strategy A) against LLM-based query-expanded retrieval (Strategy B) in real-time.</p>
+        </header>
+
+        <!-- Stats and Top bar -->
+        <section class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-dot"></div>
+                <div class="stat-label">Vector Storage: <span class="stat-val" id="doc-count">0 Documents loaded</span></div>
+            </div>
+            
+            <div class="control-group">
+                <label for="top_k">Retrieve Top K:</label>
+                <input type="range" id="top_k" min="1" max="10" value="5" oninput="updateKVal(this.value)">
+                <span class="stat-val" id="top_k_val">5</span>
+            </div>
+        </section>
+
+        <!-- Search Input -->
+        <section class="search-card">
+            <div class="search-box">
+                <input type="text" id="query-input" class="search-input" placeholder="Ask something technical (e.g., How do we handle peak loads?)" onkeydown="checkEnter(event)">
+                <button class="search-btn" onclick="submitSearch()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    Search RAG
+                </button>
+            </div>
+            <div class="suggestions">
+                <span class="suggest-label">Try asking:</span>
+                <span class="tag" onclick="useQuery('What are the key stages of handling a peak load?')">Peak Load Stages</span>
+                <span class="tag" onclick="useQuery('Why is memory cache important during high demand?')">Memory Cache Role</span>
+                <span class="tag" onclick="useQuery('What does rate limiting do?')">Rate Limiting</span>
+                <span class="tag" onclick="useQuery('How do stress tests validate system limits?')">Stress Testing</span>
+            </div>
+        </section>
+
+        <!-- Loading spinner -->
+        <div class="loader" id="query-loader"></div>
+
+        <!-- Strategy Comparison Panels -->
+        <section class="comparison-grid" id="comparison-panels">
+            <!-- Strategy A Panel -->
+            <div class="strategy-card">
+                <div class="strategy-header">
+                    <span class="strategy-title">Strategy A</span>
+                    <span class="strategy-badge strategy-a-badge">Direct Retrieval</span>
+                </div>
+                
+                <div class="results-list" id="results-a">
+                    <div class="empty-state">
+                        <div class="empty-icon">🔍</div>
+                        <p>Submit a query above to evaluate the Direct Vector Search matches.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Strategy B Panel -->
+            <div class="strategy-card">
+                <div class="strategy-header">
+                    <span class="strategy-title">Strategy B</span>
+                    <span class="strategy-badge strategy-b-badge">Query Expanded</span>
+                </div>
+                
+                <div class="results-list" id="results-b">
+                    <div class="empty-state">
+                        <div class="empty-icon">🚀</div>
+                        <p>Submit a query above to evaluate Expanded Query matches.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Knowledge Base Inspector -->
+        <section class="kb-card">
+            <div class="kb-header" onclick="toggleKb()">
+                <span class="kb-title">Knowledge Base Inspector (dataset.txt)</span>
+                <button class="kb-toggle-btn" id="kb-toggle-icon">▾</button>
+            </div>
+            <div class="kb-content" id="kb-content-list" style="display: none;">
+                <!-- Dynamically loaded on page load -->
+            </div>
+        </section>
+    </div>
+
+    <!-- Main JS Code -->
+    <script>
+        // Store currently loaded K value
+        let currentK = 5;
+
+        // On Page Load: Load Documents
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchIngestedDocuments();
+        });
+
+        function updateKVal(val) {
+            currentK = parseInt(val);
+            document.getElementById('top_k_val').textContent = val;
+        }
+
+        function checkEnter(event) {
+            if (event.key === 'Enter') {
+                submitSearch();
+            }
+        }
+
+        function useQuery(text) {
+            document.getElementById('query-input').value = text;
+            submitSearch();
+        }
+
+        // Fetch Ingested Documents List
+        async function fetchIngestedDocuments() {
+            const kbList = document.getElementById('kb-content-list');
+            const docCount = document.getElementById('doc-count');
+            
+            try {
+                const response = await fetch('/api/documents');
+                if (!response.ok) throw new Error('API failed to respond');
+                
+                const data = await response.json();
+                docCount.textContent = `${data.total_documents} Sentences Loaded`;
+                
+                kbList.innerHTML = '';
+                data.documents.forEach((doc, idx) => {
+                    const item = document.createElement('div');
+                    item.className = 'kb-item';
+                    item.textContent = `[Doc ${idx + 1}] ${doc}`;
+                    kbList.appendChild(item);
+                });
+            } catch (err) {
+                console.error("Error loading documents:", err);
+                docCount.textContent = "Offline / Server Stopped";
+            }
+        }
+
+        // Toggle Knowledge Base Accordion
+        function toggleKb() {
+            const list = document.getElementById('kb-content-list');
+            const icon = document.getElementById('kb-toggle-icon');
+            if (list.style.display === 'none') {
+                list.style.display = 'grid';
+                icon.textContent = '▴';
+            } else {
+                list.style.display = 'none';
+                icon.textContent = '▾';
+            }
+        }
+
+        // Handle Search Submission
+        async function submitSearch() {
+            const query = document.getElementById('query-input').value.trim();
+            const loader = document.getElementById('query-loader');
+            const resultsPanelA = document.getElementById('results-a');
+            const resultsPanelB = document.getElementById('results-b');
+            
+            if (!query) return;
+
+            // Show loading spinner
+            loader.style.display = 'block';
+
+            try {
+                const response = await fetch('/api/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: query, top_k: currentK })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Search request failed');
+                }
+
+                const data = await response.json();
+                
+                // RENDER STRATEGY A RESULTS
+                renderStrategyAResults(data.strategy_a.results, resultsPanelA);
+                
+                // RENDER STRATEGY B RESULTS
+                renderStrategyBResults(data.strategy_b, resultsPanelB);
+
+            } catch (err) {
+                console.error("Search failed:", err);
+                alert(`Error: ${err.message}`);
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+
+        // Render Strategy A HTML
+        function renderStrategyAResults(results, container) {
+            if (results.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        <p>No matching documents found in vector store.</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            results.forEach((match, idx) => {
+                const percentage = Math.max(0, Math.min(100, Math.round(match.score * 100)));
+                const item = document.createElement('div');
+                item.className = 'result-item';
+                item.innerHTML = `
+                    <div class="result-header">
+                        <span class="rank-label">Rank #${idx + 1} Match</span>
+                        <span class="score-badge">Similarity: ${match.score}</span>
+                    </div>
+                    <p class="result-text">${match.text}</p>
+                    <div class="score-bar-container">
+                        <div class="score-bar" style="width: 0%; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-indigo));"></div>
+                    </div>
+                `;
+                container.appendChild(item);
+                
+                // Trigger smooth progress animation
+                setTimeout(() => {
+                    item.querySelector('.score-bar').style.width = `${percentage}%`;
+                }, 50);
+            });
+        }
+
+        // Render Strategy B HTML
+        function renderStrategyBResults(strategyBData, container) {
+            const results = strategyBData.results;
+            
+            container.innerHTML = `
+                <div class="expansion-box">
+                    <span class="expansion-label">Smarter Local Expanded Query</span>
+                    <span class="expansion-text">"${strategyBData.expanded_query}"</span>
+                </div>
+            `;
+
+            if (results.length === 0) {
+                container.innerHTML += `
+                    <div class="empty-state" style="height: 180px;">
+                        <div class="empty-icon">⚠️</div>
+                        <p>No matching documents found in vector store.</p>
+                    </div>`;
+                return;
+            }
+
+            const listWrapper = document.createElement('div');
+            listWrapper.className = 'results-list';
+            listWrapper.style.marginTop = '1rem';
+
+            results.forEach((match, idx) => {
+                const percentage = Math.max(0, Math.min(100, Math.round(match.score * 100)));
+                const item = document.createElement('div');
+                item.className = 'result-item';
+                item.innerHTML = `
+                    <div class="result-header">
+                        <span class="rank-label">Rank #${idx + 1} Match</span>
+                        <span class="score-badge" style="color: var(--accent-purple); background: rgba(168, 85, 247, 0.1); border-color: rgba(168, 85, 247, 0.25);">Similarity: ${match.score}</span>
+                    </div>
+                    <p class="result-text">${match.text}</p>
+                    <div class="score-bar-container">
+                        <div class="score-bar" style="width: 0%;"></div>
+                    </div>
+                `;
+                listWrapper.appendChild(item);
+                container.appendChild(listWrapper);
+
+                // Trigger smooth progress animation
+                setTimeout(() => {
+                    item.querySelector('.score-bar').style.width = `${percentage}%`;
+                }, 50);
+            });
+        }
+    </script>
+</body>
+</html>

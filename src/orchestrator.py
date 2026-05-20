@@ -24,8 +24,12 @@ class RAGOrchestrator:
             "strategy_b": strategy_b_result
         }
 if __name__ == "__main__":
+    import os
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    dataset_path = os.path.join(current_dir, "..", "data", "dataset.txt")
+
     orchestrator = RAGOrchestrator()
-    orchestrator.ingest_documents("../data/dataset.txt")
+    orchestrator.ingest_documents(dataset_path)
     query = "What are the key features of peak load handling?"
     results = orchestrator.retrieve(query)
     print("Results from Strategy A:")

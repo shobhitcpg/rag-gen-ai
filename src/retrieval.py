@@ -43,9 +43,46 @@ class RetrievalEngine:
         return " ".join(retrieved_docs)
 
     def mock_query_expansion(self, query_text: str):
-        # For real case vertexAI would enhance this query
-        #BuT here we just update with our own dummy text
-        return f"Expanded query"
+        # Local keyword mapping representing common topics in the dataset to simulate LLM query expansion
+        synonyms = {
+            "peak load": ["surge", "demand", "traffic spike", "resource saturation", "high load"],
+            "spike": ["peak load", "surge", "saturation", "overload"],
+            "overload": ["peak load", "surge", "cpu usage", "resource exhaustion"],
+            "monitoring": ["metrics", "cpu usage", "memory consumption", "alerts", "telemetry"],
+            "autoscaling": ["scale", "elasticity", "containers", "instances", "virtual machines"],
+            "load distribution": ["load balancer", "traffic routing", "health check", "servers"],
+            "balancer": ["load distribution", "routing", "servers", "nodes"],
+            "caching": ["memory cache", "redis", "fast response", "session store", "latency"],
+            "cache": ["caching", "memory", "in-memory", "latency", "redis"],
+            "rate limiting": ["request control", "blocking", "throttling", "ddos protection"],
+            "queueing": ["message queue", "decouple", "workers", "backend processing", "asynchronous"],
+            "queue": ["queueing", "decoupling", "decouple", "workers", "async"],
+            "database": ["indexes", "read replicas", "query optimization", "sql", "datastore"],
+            "optimization": ["indexing", "performance tuning", "bottlenecks", "speed"],
+            "graceful degradation": ["noncritical", "fallback", "redundancy", "resilience"],
+            "testing": ["stress tests", "load tests", "simulated traffic", "validation", "benchmark"],
+            "redundancy": ["failover", "backups", "high availability", "outages", "fault tolerance"],
+            "cdn": ["content delivery network", "static assets", "offload", "edge caching"]
+        }
+        
+        normalized = query_text.lower()
+        expanded_terms = [query_text] # Keep original query terms
+        
+        for key, value in synonyms.items():
+            if key in normalized:
+                expanded_terms.extend(value)
+                
+        # Deduplicate terms while preserving order
+        seen = set()
+        deduped = []
+        for term in " ".join(expanded_terms).split():
+            clean = term.strip(",.?!()\"'").lower()
+            if clean and clean not in seen:
+                seen.add(clean)
+                deduped.append(clean)
+                
+        # Return the expanded query as a single string
+        return " ".join(deduped)
 
     def vertex_query_expansion(self, query_text: str):
         # Placeholder for actual Vertex AI query expansion logic
